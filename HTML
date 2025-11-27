@@ -1,0 +1,64 @@
+HTML
+<div class="app">
+  <div class="left">
+    <h1>Sankey — Ferrari 2011–2025</h1>
+
+    <div class="section">
+      <h2>Años (multi-selección)</h2>
+      <div class="btnrow">
+        <button id="btnAll">Seleccionar todo</button>
+        <button id="btnFocus" class="primary">Solo 2024–2025</button>
+        <button id="btnClear">Limpiar</button>
+      </div>
+      <div id="yearsBox" class="years"></div>
+      <div class="controlsSmall" style="margin-top:6px">
+        <label for="yearOne">Ver 1 año:</label>
+        <select id="yearOne"></select>
+        <button id="btnRenderOne">Ver</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>Resaltar criterios</h2>
+      <div id="criteriaBox" class="criteria"></div>
+      <div class="note">Al marcar, se resaltan nodos y enlaces desde esos criterios.</div>
+    </div>
+
+    <div class="section">
+      <h2>Play / Pause</h2>
+      <div class="controlsSmall">
+        <button id="btnPlay">Play</button>
+        <button id="btnPause">Pause</button>
+        <label><input type="checkbox" id="chkLoop" checked> Loop</label>
+        <label>ms: <input id="ms" type="number" value="900" min="200" step="100" style="width:86px"></label>
+      </div>
+      <div id="status" class="note">Pausado</div>
+    </div>
+  </div>
+
+  <div class="right">
+    <div id="badges" class="badges"></div>
+
+    <div id="piBar" class="pi-bar">
+      <span class="pi-label"><b>Comprobar PI</b>:</span>
+      <button id="btnPI1">Exclusividad → Margen/VR</button>
+      <button id="btnPI2">Electrificación → Mix EV</button>
+      <button id="btnPI3">Digital → Tiempo/NPS</button>
+      <span id="piOut" class="note pi-out"></span>
+    </div>
+
+    <div class="viz">
+      <div id="chart"></div>
+      <aside id="insightsPanel" class="panel-insights">
+        <h2>Insights por año</h2>
+        <div class="controlsSmall" style="margin-bottom:6px">
+          <label><input type="radio" name="insMode" value="all" checked> Todos</label>
+          <label><input type="radio" name="insMode" value="sel"> Solo seleccionados</label>
+        </div>
+        <div id="insightsList" class="insights"></div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<div class="tooltip" id="tip"></div>
