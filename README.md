@@ -12,52 +12,50 @@ Garantizar que cualquier investigador pueda reproducir el experimento de validac
 
 1. Estructura general del repositorio
 
-Carpetas recomendadas:
-
-Carpeta	Contenido	Descripción
-/data/	evaluacion_3_7_v0.5.xlsx	Dataset base con criterios, vías, ponderaciones, pesos y referencias APA7.
+   Carpetas recomendadas:
+    Carpeta	Contenido	Descripción
+    /data/	evaluacion_3_7_v0.5.xlsx	Dataset base con criterios, vías, ponderaciones, pesos y referencias APA7.
 
 2. Archivos principales
-Archivo	Propósito
-sankey.html	Define la estructura base (divs, controles, paneles de selección, etc.).
-sankey.css	Define los estilos visuales (colores, disposición, tipografía, márgenes, paleta de azules).
-sankey.js	Contiene la lógica de renderizado D3.js, el procesamiento del dataset y las interacciones.
-evaluacion_3_7_v0.5.xlsx	Contiene la matriz completa de criterios-vías-KPIs con años 2011–2025.
+    Archivo	Propósito
+    sankey.html	Define la estructura base (divs, controles, paneles de selección, etc.).
+    sankey.css	Define los estilos visuales (colores, disposición, tipografía, márgenes, paleta de azules).
+    sankey.js	Contiene la lógica de renderizado D3.js, el procesamiento del dataset y las interacciones.
+    evaluacion_3_7_v0.5.xlsx	Contiene la matriz completa de criterios-vías-KPIs con años 2011–2025.
+    README.md	Describe brevemente cómo abrir el experimento en CodePen y cómo interpretar la visualización.
 
-README.md	Describe brevemente cómo abrir el experimento en CodePen y cómo interpretar la visualización.
 3. Dependencias externas
-Para ejecutar el código en CodePen o cualquier entorno web sin backend, asegúrate de incluir en Settings → JS externals las siguientes bibliotecas:
-JS externals las siguientes bibliotecas:
-https://unpkg.com/d3@7
-https://unpkg.com/d3-sankey@0.12.3
+    Para ejecutar el código en CodePen o cualquier entorno web sin backend, asegúrate de incluir en Settings → JS externals las siguientes bibliotecas:
+    JS externals las siguientes bibliotecas:
+    https://unpkg.com/d3@7
+    https://unpkg.com/d3-sankey@0.12.3
 
 4. Proceso de validación reproducible
-Paso 1. Acceso y descarga
- a) Ir al repositorio público:
-    https://github.com/jpimilan/Ferrari
+    Paso 1. Acceso y descarga
+     a) Ir al repositorio público:
+        https://github.com/jpimilan/Ferrari
+    
+     b) Descargar como archivo .zip o clonar con:
+        git clone https://github.com/jpimilan/Ferrari.git
+    
+    Paso 2. Carga en CodePen
+      a) Crear una cuenta gratuita en https://codepen.io
+      b) Abrir un nuevo Pen.
+      c) Copiar el contenido de los archivos:
+        - sankey.html → pestaña HTML
+        - sankey.css → pestaña CSS
+        - sankey.js → pestaña JS
+    
+     En “Settings” → pestaña JS, agregar las dependencias D3.js mencionadas arriba.
 
- b) Descargar como archivo .zip o clonar con:
-    git clone https://github.com/jpimilan/Ferrari.git
+      Paso 3. Carga del dataset
+       a) Exportar el archivo evaluacion_3_7_v0.5.xlsx como CSV (por ejemplo, data.csv).
+       b) Cargar el CSV en CodePen como variable o usar un enlace público de GitHub Raw:
+       Ejemplo:
+       js:
+       const DATA_URL = "https://raw.githubusercontent.com/jpimilan/Ferrari/main/data/data.csv";
 
-Paso 2. Carga en CodePen
-  a) Crear una cuenta gratuita en https://codepen.io
-  b) Abrir un nuevo Pen.
-  c) Copiar el contenido de los archivos:
-    - sankey.html → pestaña HTML
-    - sankey.css → pestaña CSS
-    - sankey.js → pestaña JS
-
- En “Settings” → pestaña JS, agregar las dependencias D3.js mencionadas arriba.
-
- Paso 3. Carga del dataset
-  a) Exportar el archivo evaluacion_3_7_v0.5.xlsx como CSV (por ejemplo, data.csv).
-  b) Cargar el CSV en CodePen como variable o usar un enlace público de GitHub Raw:
-  Ejemplo:
-  js:
-  const DATA_URL = "https://raw.githubusercontent.com/jpimilan/Ferrari/main/data/data.csv";
-
-
- 3. Asegurar que el script de carga use:
+ 5. Asegurar que el script de carga use:
   js:
   d3.csv(DATA_URL).then(data => {
   renderSankey(data);
@@ -71,9 +69,9 @@ Paso 2. Carga en CodePen
       - Columna derecha: KPIs (VR, margen, NPS, mix híbrido, tiempo de integración).
       - Activar los botones “Comprobar PI” para verificar flujos entre criterios y KPIs.
 
-  4. Comparar los resultados esperados con los reportados en sección 3.7.7 del manuscrito.
+  6. Comparar los resultados esperados con los reportados en sección 3.7.7 del manuscrito.
 
-  5. Validación del modelo
+  7. Validación del modelo
      El experimento se considera válido si al ejecutar los años 2024–2025:
        Los flujos principales del Sankey coinciden con:
          Electrificación selectiva ≈ 32.5 %
@@ -85,9 +83,10 @@ Paso 2. Carga en CodePen
        El panel lateral lista los insights 2024 y 2025.
        La lógica de las relaciones PI1–PI3 coincide con la descripción del manuscrito (3.7.7).
 
-  6. Interpretación de resultados
-     La correcta reproducción del Sankey confirma la validación de la hipótesis de que el modelo de escasez disciplinada y electrificación selectiva sostiene la rentabilidad, el VR y la transición tecnológica con control de riesgo y tiempo de integración.
-     La coincidencia entre pesos, flujos y etiquetas de etapa certifica la validez interna y la replicabilidad del modelo en otros entornos visuales.
+  8. Interpretación de resultados
+       La correcta reproducción del Sankey confirma la validación de la hipótesis de que el modelo de escasez disciplinada y electrificación selectiva sostiene la rentabilidad.
+       El VR y la transición tecnológica con control de riesgo y tiempo de integración.
+       La coincidencia entre pesos, flujos y etiquetas de etapa certifica la validez interna y la replicabilidad del modelo en otros entornos visuales.
 
-  8. Referencia para citar el protocolo
-     Imilan, J. P. (2025). Protocolo de validación del modelo Sankey-MCDM Ferrari (2011–2025) [Repositorio GitHub]. Recuperado de https://github.com/jpimilan/Ferrari
+  9. Referencia para citar el protocolo
+      Imilan, J. P. (2025). Protocolo de validación del modelo Sankey-MCDM Ferrari (2011–2025) [Repositorio GitHub]. Recuperado de https://github.com/jpimilan/Ferrari
