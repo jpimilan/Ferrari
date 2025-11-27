@@ -1,0 +1,227 @@
+(function () {
+  "use strict";
+  function loadScript(src){return new Promise(function(res,rej){var s=document.createElement("script");s.src=src;s.async=true;s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
+  loadScript("https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js")
+    .then(function(){return loadScript("https://cdn.jsdelivr.net/npm/d3-sankey@0.12.3/dist/d3-sankey.min.js");})
+    .then(start).catch(function(e){console.error(e);});
+
+  function start(){
+    // Catálogos
+    var criterios=["VR","ASP","NPS","Tiempo","Riesgo","ESG","TOWS"];
+    var vias=["Precio / Personalización / Escasez","Comunidad y Patrimonio","Electrificación Selectiva","Servicios Digitales y Suscripciones"];
+    var kpis=["VR 24–36 m","Margen por unidad","NPS emoción","Tiempo de integración","Mix híbrido/EV"];
+    function viaKey(v){if(v===vias[0])return"Precio";if(v===vias[1])return"Comunidad";if(v===vias[2])return"Electrificación";return"Servicios";}
+    function etapa(y){return y<=2015?"Discovery":(y<=2023?"Verificación":"Validación");}
+
+    // Paleta azules
+    const palette = ["#eaf2ff","#d8e8ff","#c6ddff","#b2d0ff","#9ac0ff","#7eabff","#6497f2","#4f83e6","#3a70d9","#265ecb"];
+    const colorC = d3.scaleOrdinal().domain(criterios).range(palette);
+    const colorV = d3.scaleOrdinal().domain(vias).range(palette.slice().reverse());
+    const colorK = d3.scaleOrdinal().domain(kpis).range(palette);
+
+    // Data (resumen)
+    var data=[
+      {Año:2011,Insight:"Rendimiento superior en Fiat; escasez disciplinada.",Dim:"Económica/Corporativa",intens:{VR:4,ASP:3,NPS:2,Tiempo:3,Riesgo:2,ESG:1,TOWS:3},vias:{Precio:0.35,Comunidad:0.30,Electrificación:0.20,Servicios:0.15}},
+      {Año:2012,Insight:"Resiliencia de márgenes con bajo volumen y alto valor.",Dim:"Económica",intens:{VR:4,ASP:4,NPS:2,Tiempo:3,Riesgo:2,ESG:1,TOWS:3},vias:{Precio:0.35,Comunidad:0.30,Electrificación:0.20,Servicios:0.15}},
+      {Año:2013,Insight:"Preparación de spinoff y ajuste de gobernanza.",Dim:"Legal/Corporativa",intens:{VR:3,ASP:3,NPS:2,Tiempo:3,Riesgo:3,ESG:1,TOWS:4},vias:{Precio:0.30,Comunidad:0.30,Electrificación:0.25,Servicios:0.15}},
+      {Año:2014,Insight:"FCA se consolida; preparación de Ferrari N.V.",Dim:"Legal/Financiera",intens:{VR:4,ASP:4,NPS:3,Tiempo:3,Riesgo:3,ESG:1,TOWS:4},vias:{Precio:0.35,Comunidad:0.25,Electrificación:0.25,Servicios:0.15}},
+      {Año:2015,Insight:"IPO y exclusividad como política explícita.",Dim:"Económica/Sociocultural",intens:{VR:5,ASP:5,NPS:3,Tiempo:4,Riesgo:2,ESG:1,TOWS:4},vias:{Precio:0.40,Comunidad:0.20,Electrificación:0.25,Servicios:0.15}},
+      {Año:2016,Insight:"Primer año pleno post spin-off; mezcla disciplinada.",Dim:"Económica/Legal/Corporativa",intens:{VR:4,ASP:4,NPS:3,Tiempo:3,Riesgo:3,ESG:1,TOWS:4},vias:{Precio:0.45,Comunidad:0.25,Electrificación:0.20,Servicios:0.10}},
+      {Año:2017,Insight:"Personalización y asignación refuerzan márgenes.",Dim:"Económica/Sociocultural",intens:{VR:5,ASP:4,NPS:3,Tiempo:3,Riesgo:3,ESG:1,TOWS:4},vias:{Precio:0.45,Comunidad:0.25,Electrificación:0.15,Servicios:0.15}},
+      {Año:2018,Insight:"Series limitadas elevan ASP; backlog sostiene VR.",Dim:"Económica/Sociocultural",intens:{VR:5,ASP:5,NPS:3,Tiempo:3,Riesgo:3,ESG:1,TOWS:4},vias:{Precio:0.45,Comunidad:0.25,Electrificación:0.15,Servicios:0.15}},
+      {Año:2019,Insight:"SF90 PHEV; electrificación entra en hoja de ruta.",Dim:"Tecnológica/Legal/Económica",intens:{VR:5,ASP:5,NPS:3,Tiempo:3,Riesgo:3,ESG:2,TOWS:4},vias:{Precio:0.40,Comunidad:0.20,Electrificación:0.25,Servicios:0.15}},
+      {Año:2020,Insight:"COVID-19: disrupción y aceleración digital.",Dim:"Económica/Social/Legal",intens:{VR:4,ASP:3,NPS:3,Tiempo:5,Riesgo:5,ESG:2,TOWS:3},vias:{Precio:0.25,Comunidad:0.15,Electrificación:0.25,Servicios:0.35}},
+      {Año:2021,Insight:"Recuperación y 296 GTB (PHEV).",Dim:"Tecnológica/Legal/Económica",intens:{VR:5,ASP:5,NPS:3,Tiempo:3,Riesgo:3,ESG:3,TOWS:4},vias:{Precio:0.35,Comunidad:0.20,Electrificación:0.30,Servicios:0.15}},
+      {Año:2022,Insight:"Consolidación ESG y transición híbrida/EV.",Dim:"Tecnológica/Ambiental/Legal",intens:{VR:5,ASP:5,NPS:3,Tiempo:3,Riesgo:3,ESG:4,TOWS:4},vias:{Precio:0.35,Comunidad:0.20,Electrificación:0.30,Servicios:0.15}},
+      {Año:2023,Insight:"Doble materialidad ESG; listas sostienen VR/ASP.",Dim:"Ambiental/Legal/Tecnológica",intens:{VR:5,ASP:5,NPS:3,Tiempo:3,Riesgo:3,ESG:4,TOWS:4},vias:{Precio:0.35,Comunidad:0.20,Electrificación:0.30,Servicios:0.15}},
+      {Año:2024,Insight:"Mix híbrido crece; prepara EV y refuerza ESG.",Dim:"Tecnológica/Ambiental/Legal",intens:{VR:5,ASP:5,NPS:3,Tiempo:3,Riesgo:3,ESG:4,TOWS:4},vias:{Precio:0.35,Comunidad:0.20,Electrificación:0.30,Servicios:0.15}},
+      {Año:2025,Insight:"CMD 2025: roadmap EV; ejecución sólida.",Dim:"Tecnológica/Ambiental/Legal",intens:{VR:5,ASP:5,NPS:3,Tiempo:3,Riesgo:4,ESG:5,TOWS:4},vias:{Precio:0.30,Comunidad:0.20,Electrificación:0.35,Servicios:0.15}}
+    ];
+
+    // UI refs
+    var yearsBox=document.getElementById("yearsBox");
+    var selOne=document.getElementById("yearOne");
+    var insightsList=document.getElementById("insightsList");
+    var criteriaBox=document.getElementById("criteriaBox");
+    var badges=document.getElementById("badges");
+
+    criterios.forEach(function(c){
+      var lab=document.createElement("label");
+      lab.innerHTML='<input type="checkbox" class="c" value="'+c+'"> '+c;
+      criteriaBox.appendChild(lab);
+    });
+    yearsBox.innerHTML=data.map(d => `<label><input type="checkbox" class="y" value="${d.Año}"> ${d.Año}</label>`).join("");
+    selOne.innerHTML=data.map(d => `<option value="${d.Año}">${d.Año}</option>`).join("");
+    selOne.value=2025;
+
+    function selectedYears(){return Array.from(document.querySelectorAll('.y:checked')).map(x=>+x.value);}
+    function selectedCriteria(){return Array.from(document.querySelectorAll('.c:checked')).map(x=>x.value);}
+
+    function renderInsightList(){
+      var mode=(document.querySelector('input[name="insMode"]:checked')||{}).value||"all";
+      var setYears=selectedYears();
+      var list=data.slice();
+      if(mode==="sel" && setYears.length) list=list.filter(d=>setYears.indexOf(d.Año)>=0);
+      insightsList.innerHTML=list.map(d=>`<div><span class="pill">${d.Año}</span> <b>${d.Insight}</b> <em>(${d.Dim||"—"}) — ${etapa(d.Año)}</em></div>`).join("");
+    }
+    renderInsightList();
+    document.querySelectorAll('input[name="insMode"]').forEach(r=>r.addEventListener("change",renderInsightList));
+
+    // Helpers Sankey
+    function findByYear(y){return data.find(d=>d.Año===y)||null;}
+    function aggregate(years){
+      if(!years||!years.length) return findByYear(+selOne.value);
+      var n=years.length, accI={VR:0,ASP:0,NPS:0,Tiempo:0,Riesgo:0,ESG:0,TOWS:0}, accV={Precio:0,Comunidad:0,Electrificación:0,Servicios:0}, texto=[];
+      years.forEach(y=>{
+        var r=findByYear(y);
+        criterios.forEach(k=>accI[k]+=r.intens[k]);
+        for(var k in accV) accV[k]+=r.vias[k];
+        texto.push(y+": "+r.Insight);
+      });
+      criterios.forEach(k=>accI[k]/=n); for(var k2 in accV) accV[k2]/=n;
+      return {Año:years[0]+"–"+years[years.length-1],Insight:texto[0]+(texto.length>1?" …":""),Dim:etapa(years[0])+" (promedio)",intens:accI,vias:accV};
+    }
+    function buildGraph(row){
+      var total=criterios.reduce((s,c)=>s+row.intens[c],0);
+      var P={}; criterios.forEach(c=>P[c]=100*row.intens[c]/total);
+      var nodes=[], links=[];
+      criterios.forEach(c=>nodes.push({name:"C:"+c}));
+      vias.forEach(v=>nodes.push({name:"V:"+v}));
+      kpis.forEach(k=>nodes.push({name:"K:"+k}));
+      criterios.forEach(c=>{
+        vias.forEach(v=>{
+          var val=P[c]*row.vias[viaKey(v)];
+          if(val>0) links.push({source:"C:"+c,target:"V:"+v,value:val,label:`${c} → ${v}`});
+        });
+      });
+      var viaTotals={}; vias.forEach(v=>{viaTotals[v]=criterios.reduce((s,c)=>s+P[c]*row.vias[viaKey(v)],0);});
+      var viaToKPI={};
+      viaToKPI[vias[0]]={"VR 24–36 m":0.50,"Margen por unidad":0.50,"NPS emoción":0.00,"Tiempo de integración":0.00,"Mix híbrido/EV":0.00};
+      viaToKPI[vias[1]]={"VR 24–36 m":0.10,"Margen por unidad":0.10,"NPS emoción":0.80,"Tiempo de integración":0.00,"Mix híbrido/EV":0.00};
+      viaToKPI[vias[2]]={"VR 24–36 m":0.00,"Margen por unidad":0.15,"NPS emoción":0.00,"Tiempo de integración":0.15,"Mix híbrido/EV":0.70};
+      viaToKPI[vias[3]]={"VR 24–36 m":0.00,"Margen por unidad":0.10,"NPS emoción":0.30,"Tiempo de integración":0.60,"Mix híbrido/EV":0.00};
+      vias.forEach(v=>{
+        var tv=viaTotals[v];
+        for(var k in viaToKPI[v]){
+          var w=viaToKPI[v][k], val=tv*w;
+          if(val>0) links.push({source:"V:"+v,target:"K:"+k,value:val,label:`${v} → ${k}`});
+        }
+      });
+      return {nodes,links};
+    }
+
+    function render(row){
+      var chart=document.getElementById("chart"); chart.innerHTML="";
+      var width=chart.clientWidth, height=chart.clientHeight;
+      var svg=d3.select(chart).append("svg").attr("width",width).attr("height",height).style("overflow","visible"); // evita cortes
+      var g=svg.append("g");
+      var built=buildGraph(row);
+
+      // extent con márgenes internos dobles (24 px por lado)
+      var sankeyGen=d3.sankey().nodeId(d=>d.name).nodeWidth(14).nodePadding(18).nodeAlign(d3.sankeyJustify).extent([[24,14],[width-24,height-14]]);
+      var graph=sankeyGen({nodes:built.nodes.map(d=>Object.assign({},d)),links:built.links.map(d=>Object.assign({},d))});
+
+      // Enlaces
+      g.append("g").attr("fill","none").selectAll("path").data(graph.links).enter().append("path")
+        .attr("d", d3.sankeyLinkHorizontal())
+        .attr("stroke", function(d){
+          var t = d.target && d.target.name ? d.target.name : "";
+          if (t.startsWith("V:")) return colorV(t.slice(2));
+          if (t.startsWith("K:")) return colorK(t.slice(2));
+          return "#999";
+        })
+        .attr("stroke-linecap","round")
+        .attr("stroke-opacity",0.6)
+        .attr("stroke-width", d=>Math.max(1,d.width))
+        .on("mousemove",function(ev,d){var tip=d3.select("#tip");tip.style("opacity",1).html(d.label+"<br/><b>"+d.value.toFixed(2)+"%</b>").style("left",(ev.pageX)+"px").style("top",(ev.pageY-10)+"px");})
+        .on("mouseout",function(){d3.select("#tip").style("opacity",0);});
+
+      // Nodos
+      var node=g.append("g").selectAll("g").data(graph.nodes).enter().append("g").attr("class","sankey-node");
+      node.append("rect")
+        .attr("x",d=>d.x0).attr("y",d=>d.y0).attr("height",d=>d.y1-d.y0).attr("width",d=>d.x1-d.x0)
+        .attr("fill",function(d){
+          var n=d.name||"";
+          if(n.startsWith("C:")) return colorC(n.slice(2));
+          if(n.startsWith("V:")) return colorV(n.slice(2));
+          return colorK(n.slice(2));
+        })
+        .attr("stroke","#333");
+      node.append("text")
+        .attr("x",d=>d.x0<width/2?d.x1+8:d.x0-8)        /* + un poco más de aire para etiquetas */
+        .attr("y",d=>(d.y0+d.y1)/2).attr("dy","0.35em")
+        .attr("text-anchor",d=>d.x0<width/2?"start":"end")
+        .text(d=>d.name.replace(/^C:|^V:|^K:/,"")+" ("+((d.value||0).toFixed(1))+"%)");
+
+      badges.innerHTML='<span class="pill">'+row.Año+'</span> <b>'+row.Insight+'</b> <em>('+(row.Dim||"—")+') — '+(typeof row.Año==="string"?"Promedio":etapa(row.Año))+ '</em>';
+      refreshPI();
+      updateHighlight();
+    }
+
+    function renderAggregated(){ render( aggregate(selectedYears()) ); }
+
+    function updateHighlight(){
+      var sel=selectedCriteria(), any=sel.length>0, svg=d3.select("#chart svg");
+      svg.selectAll("path").classed("dim",function(d){
+        if(!any) return false;
+        var src=(d.source&&d.source.name)?d.source.name:"";
+        if(src.indexOf("C:")==0){var c=src.slice(2);return sel.indexOf(c)<0;} return false;
+      });
+      svg.selectAll(".sankey-node").classed("node-dim",function(d){
+        if(!any) return false;
+        var n=d.name||""; if(n.indexOf("C:")==0){var c=n.slice(2);return sel.indexOf(c)<0;} return false;
+      });
+    }
+    document.getElementById("criteriaBox").addEventListener("change",updateHighlight);
+
+    // PI auto
+    function fmt(x){return x.toFixed(1)+"%";}
+    function currentRow(){var ys=selectedYears();return aggregate(ys.length? ys : null);}
+    var currentPI="PI1";
+
+    function refreshPI(){
+      var r=currentRow(); if(!r) return;
+      if(currentPI==="PI1"){
+        var precio = 100*r.vias.Precio;
+        var totalI=criterios.reduce((s,k)=>s+r.intens[k],0);
+        var P_VR = 100*r.intens.VR/totalI, P_ASP=100*r.intens.ASP/totalI;
+        document.getElementById("piOut").innerHTML='PI1 — Exclusividad → <b>VR+Margen</b> = <b>'+fmt(precio)+'</b>. Soporte: VR='+fmt(P_VR)+', ASP='+fmt(P_ASP)+'.';
+      } else if(currentPI==="PI2"){
+        var electr = 100*r.vias.Electrificación, mixEV = electr*0.70;
+        var totalI2=criterios.reduce((s,k)=>s+r.intens[k],0);
+        var P_ESG = 100*r.intens.ESG/totalI2;
+        document.getElementById("piOut").innerHTML='PI2 — Electrificación → <b>Mix híbrido/EV</b> = <b>'+fmt(mixEV)+'</b>. Soporte: ESG='+fmt(P_ESG)+'.';
+      } else {
+        var serv = 100*r.vias.Servicios, t = serv*0.60, n = serv*0.30;
+        var totalI3=criterios.reduce((s,k)=>s+r.intens[k],0);
+        var P_T = 100*r.intens.Tiempo/totalI3, P_N = 100*r.intens.NPS/totalI3;
+        document.getElementById("piOut").innerHTML='PI3 — Digital → <b>Tiempo</b> = '+fmt(t)+' y <b>NPS</b> = '+fmt(n)+'. Soporte: Tiempo='+fmt(P_T)+', NPS='+fmt(P_N)+'.';
+      }
+    }
+    document.getElementById("btnPI1").onclick=function(){currentPI="PI1"; refreshPI();};
+    document.getElementById("btnPI2").onclick=function(){currentPI="PI2"; refreshPI();};
+    document.getElementById("btnPI3").onclick=function(){currentPI="PI3"; refreshPI();};
+
+    // Años
+    document.getElementById("btnAll").onclick=function(){document.querySelectorAll('.y').forEach(y=>y.checked=true);renderInsightList();renderAggregated();};
+    document.getElementById("btnFocus").onclick=function(){document.querySelectorAll('.y').forEach(y=>y.checked=(+y.value>=2024));renderInsightList();renderAggregated();};
+    document.getElementById("btnClear").onclick=function(){document.querySelectorAll('.y').forEach(y=>y.checked=false);renderInsightList();renderAggregated();};
+    yearsBox.addEventListener("change",function(){renderInsightList();renderAggregated();});
+    document.getElementById("btnRenderOne").onclick=function(){document.querySelectorAll('.y').forEach(y=>y.checked=false);renderInsightList();render(findByYear(+selOne.value));};
+
+    // Primera vista + Play
+    render(data[data.length-1]);
+    var timer=null, idx=0, status=document.getElementById("status");
+    document.getElementById("btnPlay").onclick=function(){
+      var ms=Math.max(200,+document.getElementById("ms").value||900); if(timer) clearInterval(timer);
+      idx=0; var loop=document.getElementById("chkLoop").checked;
+      timer=setInterval(function(){
+        var row=data[idx]; document.getElementById("yearOne").value=row.Año;
+        document.querySelectorAll('.y').forEach(y=>y.checked=false);
+        render(row); status.textContent="Reproduciendo: "+row.Año; idx++;
+        if(idx>=data.length){ if(loop) idx=0; else {clearInterval(timer); timer=null; status.textContent="Fin";} }
+      },ms);
+    };
+    document.getElementById("btnPause").onclick=function(){ if(timer){clearInterval(timer); timer=null; status.textContent="Pausado";} };
+  }
+})();
