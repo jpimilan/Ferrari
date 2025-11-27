@@ -61,13 +61,13 @@ Garantizar que cualquier investigador pueda reproducir el experimento de validac
   renderSankey(data);
    });
 
-  Paso 4. Ejecución de la validación
-   a) Ejecutar el Pen y seleccionar los años 2024 y 2025.
-   b) Observar la estructura:
-      . Columna izquierda: criterios ponderados.
-      - Columna central: vías estratégicas (Electrificación selectiva, Escasez, Comunidad, Digital).
-      - Columna derecha: KPIs (VR, margen, NPS, mix híbrido, tiempo de integración).
-      - Activar los botones “Comprobar PI” para verificar flujos entre criterios y KPIs.
+     Paso 4. Ejecución de la validación
+      a) Ejecutar el Pen y seleccionar los años 2024 y 2025.
+      b) Observar la estructura:
+         . Columna izquierda: criterios ponderados.
+         - Columna central: vías estratégicas (Electrificación selectiva, Escasez, Comunidad, Digital).
+         - Columna derecha: KPIs (VR, margen, NPS, mix híbrido, tiempo de integración).
+         - Activar los botones “Comprobar PI” para verificar flujos entre criterios y KPIs.
 
   6. Comparar los resultados esperados con los reportados en sección 3.7.7 del manuscrito.
 
