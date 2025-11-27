@@ -31,11 +31,10 @@ Garantizar que cualquier investigador pueda reproducir el experimento de validac
     https://unpkg.com/d3-sankey@0.12.3
 
 4. Proceso de validación reproducible
-    Paso 1. Acceso y descarga
-     a) Ir al repositorio público:
+    Paso 1. Acceso y descarga:
+      a) Ir al repositorio público:
         https://github.com/jpimilan/Ferrari
-    
-     b) Descargar como archivo .zip o clonar con:
+      b) Descargar como archivo .zip o clonar con:
         git clone https://github.com/jpimilan/Ferrari.git
     
     Paso 2. Carga en CodePen
